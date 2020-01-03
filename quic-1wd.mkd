@@ -3,7 +3,7 @@ title: Quic ACK Timestamps For Measuring One-Way Delays
 abbrev: QUIC-1WD
 docname: draft-huitema-quic-1wd-00
 category: exp
-date: 2019
+date: 2020
 
 stand_alone: yes
 
@@ -27,7 +27,11 @@ author:
 
 --- abstract
 
-One way delays are good.
+The QUIC extension for one way delay mesurements adds a single timestamp to the
+ACK frame. The timestamp is set to the number of microseconds from the
+beginning of the connection to the time at which the ACK frame is sent. The draft
+defines the "enable_one_way_delay" transport parameter for negotiating the
+extension, and two new frame types for timestamped ACK with or without ECN counts.
 
 --- middle
 
@@ -42,12 +46,12 @@ but there are however many cases in which more precise One-Way Delay (1WD)
 measurements enable more efficient Loss Detection and Congestion Control.
 
 An example would be the Low Extra Delay Background
-Transport (LEDBAT) {{?RFC8312}} which uses variations in transmission
+Transport (LEDBAT) {{?RFC6817}} which uses variations in transmission
 delay to detect competition for transmission resource. Experience shows
 that while LEDBAT may be implemented using RTT measurements, it is 
 somewhat inefficient because it will cause unnecessary slowdowns in
 case of queues or delayed ACKs on the return path. Using 1WD solves
-these issues. Similar argument can be made for most delay based algorithm.
+these issues. Similar argument can be made for most delay-based algorithms.
 
 We propose to enable one way delay measurements in QUIC by extending
 the ACK or ACK-ECN format with a timestamp field. The use of this
