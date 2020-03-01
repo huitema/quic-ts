@@ -1,7 +1,7 @@
 ---
 title: Quic Timestamps For Measuring One-Way Delays
 abbrev: QUIC-TS
-docname: draft-huitema-quic-ts-01
+docname: draft-huitema-quic-ts-02
 category: exp
 date: 2020
 
@@ -27,7 +27,7 @@ author:
 
 --- abstract
 
-The TIME-STAMP frame can be added to Quic packets when one way delay measurements
+The TIME_STAMP frame can be added to Quic packets when one way delay measurements
 is useful. The timestamp is set to the number of microseconds from the
 beginning of the connection to the time at which the packet is sent. The draft
 defines the "enable_time_stamp" transport parameter for negotiating the
@@ -54,7 +54,7 @@ case of queues or delayed ACKs on the return path. Using 1WD solves
 these issues. Similar argument can be made for most delay-based algorithms.
 
 We propose to enable one way delay measurements in QUIC by defining
-a TIME-STAMP frame carrying the time at which a packet is sent. The use of this
+a TIME_STAMP frame carrying the time at which a packet is sent. The use of this
 extension frame is negotiated with a transport parameter,
 "enable_time_stamp". When the extension is negotiated by
 both parties, this frame can be used in conjunction with other
@@ -72,7 +72,7 @@ when, and only when, they appear in all capitals, as shown here.
 The enable_time_stamp transport parameter used for negotiating the use
 of the extension frame
 is defined in {{negotiation}}. The time_stamp frame format is defined
-in {{time-stamp-format}}.
+in {{TIME_STAMP-format}}.
 
 ## Negotiation {#negotiation}
 
@@ -89,17 +89,35 @@ message. Peers that receive a time_stamp frame in the absence of
 successful negotiation MAY terminate the connection with a PROTOCOL
 VIOLATION error.
 
+## Sending TIME_STAMP frames
+
 If negotiation is successful the peers SHOULD add a time_stamp frame to
-packets carrying an ACK frame. 
+1RTT packets carrying an ACK frame. This specification does not
+impose a placement of TIME_STAMP frames in the packet. They MAY be sent
+either before or after the ACK frame.
 
-# TIME-STAMP frame format {#time-stamp-format}
+Implementations SHOULD NOT send more than one TIME_STAMP frame per
+packet, but they MAY send more than one in rare circumstances. When
+multiple TIME_STAMP frames are present in a packet, the receiver
+retains the frame indicating the largest timestamp.
 
-TIME-STAMP frames are identified by the frame
+Implementations MUST NOT send
+the TIME_STAMP frame in Initial, 0-RTT or Handshake packets, because
+there is a risk that the peer will receive such packets before the
+negotiation completes. This restriction may appear excessive because
+some Handshake packets are typically sent after the negotiation
+completes, but restricting TIME_STAMP frames to 1RTT packets is
+simpler and less error prone than allowing the
+TIME_STAMP frame in just a fraction of Handshake packets.
+
+## TIME_STAMP frame format {#TIME_STAMP-format}
+
+TIME_STAMP frames are identified by the frame
 type:
 
-* TIME-STAMP (TBD)
+* TIME_STAMP (TBD)
 
-TIME-STAMP frames carry a single parameter, the time stamp.
+TIME_STAMP frames carry a single parameter, the time stamp.
 
 ~~~
  0                   1                   2                   3
@@ -108,7 +126,7 @@ TIME-STAMP frames carry a single parameter, the time stamp.
 |                          Time Stamp (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-format title="TIME-STAMP Frame Format with Time Stamp"} 
+{: #ack-format title="TIME_STAMP Frame Format with Time Stamp"} 
 
 The time stamp encodes the number of microseconds since the beginning
 of the connection, as measured by the peer at the time at which the packet
@@ -121,7 +139,7 @@ The beginning of the connection is defined as follow:
 * for the client, the time when the first Initial packet is sent;
 * for the server, the time when the first Initial packet is received.
 
-TIME-STAMP frames are not ack-eliciting. Their loss does not
+TIME_STAMP frames are not ack-eliciting. Their loss does not
 require retransmission.
 
 ## RTT Measurements
@@ -133,7 +151,7 @@ parameter of the Timestamped ACK frames.
 ## One-Way Delay Measurements
 
 An endpoint generates a One Way Delay Sample on receiving a
-packet containing both a TIME-STAMP frame and an ACK frame that
+packet containing both a TIME_STAMP frame and an ACK frame that
 meets the following two conditions:
 
 * the largest acknowledged packet number is newly acknowledged, and
@@ -168,12 +186,12 @@ This document replaces an earlier proposal to modify the format
 of the ACK frame by including a time stamp inside the modified
 frame. The revised proposal encodes the time stamp independently
 of the ACK frame, which requires slightly more overhead to
-encode the type of the TIME-STAMP frame. 
+encode the type of the TIME_STAMP frame. 
 
 Defining an independent frame allows for more flexibility. This
-draft defines the combination of TIME-STAMP with ACK frames, but
+draft defines the combination of TIME_STAMP with ACK frames, but
 they could be combined with other frames as well. For example,
-adding a TIME-STAMP to packets carrying a Path Response could
+adding a TIME_STAMP to packets carrying a Path Response could
 allow measuring one way delays before deciding
 to migrate to a new path.
 
@@ -192,9 +210,11 @@ Suppose that we model the peer's clock as local time plus phase
 difference f, and that we model the rtt as the sum of two one way
 delays, up (u\[x\]) and down (d\[x\]). We get:
 
-    u\[x\] = p\[x\] + f - s\[x\]
+~~~
+    u[x] = p[x] + f - s[x]
 
-    d\[x\] = a\[x\] - p\[x\] - f
+    d[x] = a[x] - p[x] - f
+~~~
 
 Just looking at the equation shows that the value of f cannot be
 determined from the a series of measurement (s\[x\], a\[x\], p\[x\]). You can
@@ -209,11 +229,13 @@ control algorithms are much more interested in the variations of the
 delays than by their absolute values. Suppose we want to compare one way
 delays at measurement (x) and (y). We get:
 
-    u\[x\] = p\[x\] + f - s\[x\]
+~~~
+    u[x] = p[x] + f - s[x]
 
-    u\[y\] = p\[y\] + f - s\[y\]
+    u[y] = p[y] + f - s[y]
 
-    u\[x\] - u\[y\] = p\[x\] - p\[y\] - s\[x\] + s\[y\]
+    u[x] - u[y] = p[x] - p[y] - s[x] + s[y]
+~~~
 
 The phase difference does not affect the measurement of variations in the
 one way delay.
@@ -241,7 +263,7 @@ every 30 seconds or so.
 
 # Security Considerations
 
-The Timestamp value in the TIME-STAMP frame is asserted by the sender
+The Timestamp value in the TIME_STAMP frame is asserted by the sender
 of the packet. Adversarial peers could chose values of the time stamp
 designed to exercise side effects in congestion control algorithms
 or other algorithms relying on the one-way delays. This can be
@@ -269,7 +291,7 @@ This document also registers a new value in the QUIC Frame Type registry:
 
    Value:  TBD (using value 757 in early deployments)
 
-   Frame Name:  TIME-STAMP
+   Frame Name:  TIME_STAMP
 
    Specification:  Time stamp set at the time packet was sent
 
