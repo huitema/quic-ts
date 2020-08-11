@@ -1,7 +1,7 @@
 ---
 title: Quic Timestamps For Measuring One-Way Delays
 abbrev: QUIC-TS
-docname: draft-huitema-quic-ts-02
+docname: draft-huitema-quic-ts-03
 category: exp
 date: 2020
 
@@ -82,16 +82,31 @@ parameter:
 * enable_time_stamp (TBD)
 
 The enable time stamp transport parameter is included if the endpoint
-accepts and sends time_stamp frames for this connection. 
-This parameter has a zero-length value. Negotiation is successful if
-both peers support include this parameter in their transport parameter
-message. Peers that receive a time_stamp frame in the absence of
-successful negotiation MAY terminate the connection with a PROTOCOL
+wants to receive or accepts to send time_stamp frames for this connection. 
+This parameter is encoded as a variable integer as specified in
+section 16 of {{!I-D.ietf-quic-transport}}. It
+can take one of the following three values:
+
+1. I would like to receive TIME_STAMP frames
+2. I am able to generate TIME_STAMP frames
+3. I am able to generate TIME_STAMP frames and I would like to receive them
+
+Peers receiving another value SHOULD terminate the connection with a TRANSPORT
+PARAMETER error.
+
+A peer that advertises its capability of sending TIME_STAMP frames using
+option values 2 or 3 MUST NOT send these frames if the other
+peer does not announce advertise its desire to receive them by
+sending the enable_time_stamp TP with option 1 or 3. This condition is
+described as "successful sending negotiation" in {{sending}}.
+
+Peers that receive TIME_STAMP frames when they have not advertised
+their desire to receive them MAY terminate the connection with a PROTOCOL
 VIOLATION error.
 
-## Sending TIME_STAMP frames
+## Sending TIME_STAMP frames {#sending}
 
-If negotiation is successful the peers SHOULD add a time_stamp frame to
+Following successful sending negotiation, a peer SHOULD add a time_stamp frame to
 1RTT packets carrying an ACK frame. This specification does not
 impose a placement of TIME_STAMP frames in the packet. They MAY be sent
 either before or after the ACK frame.
@@ -281,7 +296,7 @@ shorter than the delays when sending them.
 This document registers a new value in the QUIC Transport Parameter
 Registry:
 
-   Value:  TBD (using value 0x7157 in early deployments)
+   Value:  TBD (using value 0x7158 in early deployments)
 
    Parameter Name:  enable_time_stamp
 
