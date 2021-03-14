@@ -144,15 +144,10 @@ TIME_STAMP frames carry a single parameter, the time stamp.
 {: #ack-format title="TIME_STAMP Frame Format with Time Stamp"} 
 
 The time stamp encodes the number of microseconds since the beginning
-of the connection, as measured by the peer at the time at which the packet
+of the epoch, as measured by the peer at the time at which the packet
 is sent. It is encoded using the exponent selected by the peer
 in the ack_delay_exponent. The exponent reduced time stamp is encoded 
 as a variable length integer.
-
-The beginning of the connection is defined as follow:
-
-* for the client, the time when the first Initial packet is sent;
-* for the server, the time when the first Initial packet is received.
 
 TIME_STAMP frames are not ack-eliciting. Their loss does not
 require retransmission.
@@ -162,6 +157,20 @@ require retransmission.
 RTT measurements are performed as specified in Section 4 of
 {{!I-D.ietf-quic-recovery}}, without reference to the Timestamp
 parameter of the Timestamped ACK frames.
+
+## Choice of Epoch
+
+Each peer can chose its epoch as it sees fit, but it MUST remain constant for
+the duration of the connection, and the resulting time stamps MUST be
+positive integers. Plausible values for the epoch could be:
+
+* the beginning of the connection, i.e., the time at which the first
+  packet for that connection was sent or received.
+* the time at which the first time stamp is sent.
+
+Chosing values close to the beginning of the connection ensures that the
+time stamps value will be at most equal to the duration of the connection,
+which limits the amount of bytes required to encode the time stamps.
 
 ## One-Way Delay Measurements
 
@@ -187,7 +196,10 @@ RTT sample, first_rtt. It is set to:
 
 In that formula, we assume that the local time are measured in
 microseconds since the beginning of the connection.
-
+The formula does not depend on the choice of epoch by each peer, but
+simply of the hypothesis that delays on the data path and the return
+path are about equal. 
+ 
 We understand that clocks may drift over time, and that simply
 estimating a phase shift at the beginning of a connection may be
 too simplistic for long duration connections. Implementations
