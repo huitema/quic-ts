@@ -104,6 +104,16 @@ Peers that receive TIME_STAMP frames when they have not advertised
 their desire to receive them MAY terminate the connection with a PROTOCOL
 VIOLATION error.
 
+### Zero RTT and Time Stamp Option
+
+Implementations MUST NOT remember the value of the enable_time_stamp
+parameter and try to use it when attempting 0-RTT on subsequent connections.
+This rules is in line with the suggestions in section 7.4.2 of {{!I-D.ietf-quic-transport}}
+to adopt conservative defaults and avoid compatibility issues. It is also
+consistent with the specification to only use TIME_STAMP frames in 1RTT packets,
+see {{sending}}.
+
+
 ## Sending TIME_STAMP frames {#sending}
 
 Following successful sending negotiation, a peer SHOULD add a time_stamp frame to
