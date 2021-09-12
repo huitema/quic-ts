@@ -1,7 +1,7 @@
 ---
 title: Quic Timestamps For Measuring One-Way Delays
 abbrev: QUIC-TS
-docname: draft-huitema-quic-ts-05
+docname: draft-huitema-quic-ts-06
 category: exp
 date: 2021
 
@@ -19,11 +19,42 @@ author:
         ins: C. Huitema
         name: Christian Huitema
         org: Private Octopus Inc.
-        street: 427 Golfcourse Rd
-        city: Friday Harbor
-        code: WA 98250
-        country: U.S.A
         email: huitema@huitema.net
+
+normative:
+  QUIC-TRANSPORT:
+    title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
+    date: {DATE}
+    seriesinfo:
+      RFC: 9000
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+
+  QUIC-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    date: {DATE}
+    seriesinfo:
+      RFC: 9002
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
 
 --- abstract
 
@@ -37,10 +68,10 @@ use of this extension frame, and the TIMESTAMP frame.
 
 # Introduction
 
-The QUIC Transport Protocol {{!I-D.ietf-quic-transport}} provides a
+The QUIC Transport Protocol {{QUIC-TRANSPORT}} provides a
 secure, multiplexed connection for transmitting reliable streams of
 application data. The algorithms for QUIC Loss Detection and Congestion Control
-{{!I-D.ietf-quic-recovery}} use measurement of Round Trip Time (RTT) to
+{{QUIC-RECOVERY}} use measurement of Round Trip Time (RTT) to
 determine when packets should be retransmitted. RTT measurements are useful,
 but there are however many cases in which more precise One-Way Delay (1WD)
 measurements enable more efficient Loss Detection and Congestion Control.
@@ -84,7 +115,7 @@ parameter:
 The enable timestamp transport parameter is included if the endpoint
 wants to receive or accepts to send timestamp frames for this connection. 
 This parameter is encoded as a variable integer as specified in
-section 16 of {{!I-D.ietf-quic-transport}}. It
+section 16 of {{QUIC-TRANSPORT}}. It
 can take one of the following three values:
 
 1. I would like to receive TIMESTAMP frames
@@ -108,7 +139,7 @@ VIOLATION error.
 
 Implementations MUST NOT remember the value of the enable_timestamp
 parameter and try to use it when attempting 0-RTT on subsequent connections.
-This rules is in line with the suggestions in section 7.4.2 of {{!I-D.ietf-quic-transport}}
+This rules is in line with the suggestions in section 7.4.2 of {{QUIC-TRANSPORT}}
 to adopt conservative defaults and avoid compatibility issues. It is also
 consistent with the specification to only use TIMESTAMP frames in 1RTT packets,
 see {{sending}}.
@@ -163,7 +194,7 @@ TIMESTAMP frames are not ack-eliciting. Their loss does not
 require retransmission.
 
 For congestion control, TIMESTAMP frames are treated like ACK frames. 
-Section 7 of {{!I-D.ietf-quic-recovery}} specifies that 
+Section 7 of {{QUIC-RECOVERY}} specifies that 
 "packets containing only ACK frames do not count towards bytes in flight and are not congestion controlled".
 The same applies to packets containing only TIMESTAMP frames, or a combination of ACK frames and
 TIMESTAMP frames.
@@ -171,7 +202,7 @@ TIMESTAMP frames.
 ## RTT Measurements
 
 RTT measurements are performed as specified in Section 4 of
-{{!I-D.ietf-quic-recovery}}, without reference to the Timestamp
+{{QUIC-RECOVERY}}, without reference to the Timestamp
 parameter of the Timestamped ACK frames.
 
 ## Choice of Epoch
