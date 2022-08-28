@@ -1,7 +1,7 @@
 ---
 title: Quic Timestamps For Measuring One-Way Delays
 abbrev: QUIC-TS
-docname: draft-huitema-quic-ts-07
+docname: draft-huitema-quic-ts-08
 category: exp
 date: 2022
 
@@ -90,6 +90,34 @@ informative:
          name: Mirja Kuehlewind
          role: editor
          org: Ericsson
+  
+  HyStart:
+    title: "Hybrid Slow Start for High-Bandwidth and Long-Distance Networks"
+    date: 2008
+    seriesinfo:
+      "Conference" : "International Workshop on Protocols for Fast Long-Distance Networks"
+    target: https://pdfs.semanticscholar.org/25e9/ ef3f03315782c7f1cbcd31b587857adae7d1.pdf
+    author:
+      -
+        ins: S. Ha
+        name: Sangtae Ha
+        org: University of Colorado at Boulder
+      -
+        ins: I. Rhee,
+        name: Injong Rhee
+        org: North Carolina State University
+
+  CH09:
+    title: "Implementing Cubic congestion control in Quic"
+    date: 2019
+    seriesinfo:
+      "Blog": "entry"
+    target: https://huitema.wordpress.com/2019/11/11/implementing-cubic-congestion-control-in-quic/
+    author:
+      - 
+        ins: C.Huitema
+        name: Christian Huitema
+        org: Private Octopus Inc.
 
 --- abstract
 
@@ -370,10 +398,44 @@ minute. A simple implementation of one way delay measurements could
 follow the same approach, for example resetting the phase difference
 every 30 seconds or so.
 
+# Use cases
+
+Time stamps have been found useful in multiple environments, including
+avoid spurious exit from slow start with the Hybrid Slow Start algorithm
+{{HyStart}}, and monitoring delays for individual paths for QUIC
+multipath as mentioned in {{Section 5 of MULTIPATH-QUIC}}.
+
+## Application to Hystart
+
+Implementations of the Cubic congestion control {{!RFC8312}} benefit
+from the Hybrid Slow Start algorithm {{HyStart}}. Hystart works by
+monitoring the transmission delay during the initial Slow Start phase,
+exiting slow start and moving to congestion avoidance when a delay
+increase is noticed, before usage of a too large congestion window
+causes many losses. Hystart generally improves performance of Cubic,
+but can cause performance degradation if spurious delay measurement
+cause an early exit.
+
+An example of early exit was noticed when implementing Cubic
+congestion control in QUIC {{CH09}}. Tests over a wireless connection
+showed significant jitter in the RTT measurements. This was fixed by
+exiting only after 5 measurements showed a delay increase. Further
+investigation showed that this jitter was mostly happening on the
+"upload" path. Timestamps enable measurement of the delay variations
+independently on each path, and thus improved exit decisions.
+
 ## Application to QUIC Multipath
 
 Time Stamps are very useful in multipath environments, as mentioned
-in {{Section 5 of MULTIPATH-QUIC}}.
+in {{MULTIPATH-QUIC}}. In the absence of time stamps, it is very hard to estimate
+the contribution of each path to the end to end delay,
+and the specification mandates that acknowledgements be sent on
+the same path over which packets were received. If time stamps
+are available, experiments show that performance are improved
+if the acknowlegments are sent on the shortest available path, because
+the implementation can detect packet losses or congestion events faster.
+
+
 
 # Security Considerations
 
