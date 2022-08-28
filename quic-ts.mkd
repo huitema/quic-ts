@@ -1,9 +1,9 @@
 ---
 title: Quic Timestamps For Measuring One-Way Delays
 abbrev: QUIC-TS
-docname: draft-huitema-quic-ts-06
+docname: draft-huitema-quic-ts-07
 category: exp
-date: 2021
+date: 2022
 
 stand_alone: yes
 
@@ -55,6 +55,41 @@ normative:
         name: Ian Swett
         org: Google
         role: editor
+
+informative:
+  MULTIPATH-QUIC:
+    title: "Multipath Extension for QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-multipath
+    author:
+      -
+        ins: Y. Liu
+        name: Yanmei Liu
+        role: editor
+        org: Alibaba Inc.
+      -
+         ins: Y. Ma
+         name: Yunfei Ma
+         org: Alibaba Inc.
+      -
+         ins: Q. De Coninck
+         name: Quentin De Coninck
+         role: editor
+         org: UCLouvain
+      -
+         ins: O. Bonaventure
+         name: Olivier Bonaventure
+         org: UCLouvain
+      -
+         ins: C. Huitema
+         name: Christian Huitema
+         org: Private Octopus Inc.
+      -
+         ins: M. Kuehlewind
+         name: Mirja Kuehlewind
+         role: editor
+         org: Ericsson
 
 --- abstract
 
@@ -334,6 +369,11 @@ the measurement of the minimum RTT after some delay, typically less than a
 minute. A simple implementation of one way delay measurements could
 follow the same approach, for example resetting the phase difference
 every 30 seconds or so.
+
+## Application to QUIC Multipath
+
+Time Stamps are very useful in multipath environments, as mentioned
+in {{Section 5 of MULTIPATH-QUIC}}.
 
 # Security Considerations
 
